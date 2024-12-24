@@ -22,8 +22,8 @@ export class StudentController {
   @Get()
   @Roles('admin', 'principal', 'teacher')
   @UseGuards(RolesGuard)
-  findAll() {
-    return this.studentsService.readAll();
+  readAll(@Query('name') name?: string, @Query('classId') classId?: string) {
+    return this.studentsService.readAll(name, classId);
   }
 
   @Get('name')
@@ -34,7 +34,7 @@ export class StudentController {
   }
 
   @Get('class')
-  @Roles('admin', 'teacher')
+  @Roles('admin', 'principal', 'teacher')
   @UseGuards(RolesGuard)
   readByClass(@Query('classId') classId: string) {
     return this.studentsService.readByClass(classId);
@@ -48,21 +48,21 @@ export class StudentController {
   }
 
   @Post()
-  @Roles('admin', 'principal')
+  @Roles('admin', 'teacher')
   @UseGuards(RolesGuard)
   create(@Body() createStudentDto: CreateStudentDto) {
     return this.studentsService.create(createStudentDto);
   }
 
   @Put(':id')
-  @Roles('admin', 'principal', 'teacher')
+  @Roles('admin', 'teacher')
   @UseGuards(RolesGuard)
   update(@Param('id') id: number, @Body() updateStudentDto: UpdateStudentDto) {
     return this.studentsService.update(id, updateStudentDto);
   }
 
   @Delete(':id')
-  @Roles('admin', 'principal')
+  @Roles('admin', 'teacher')
   @UseGuards(RolesGuard)
   delete(@Param('id') id: number) {
     this.studentsService.delete(id);

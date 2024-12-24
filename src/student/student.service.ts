@@ -9,8 +9,29 @@ export class StudentService {
     { id: 2, name: 'Student3', classId: 'JWAT3' },
   ];
 
-  readAll(): Student[] {
-    return this.students;
+  readAll(name?: string, classId?: string): Student[] {
+    if (!name && !classId) {
+      return this.students;
+    }
+
+    let filteredStudents = this.students;
+    if (name) {
+      filteredStudents = filteredStudents.filter((s) =>
+        s.name.toLowerCase().includes(name.toLowerCase()),
+      );
+    }
+
+    if (classId) {
+      filteredStudents = filteredStudents.filter((s) =>
+        s.classId.toLowerCase().includes(classId.toLowerCase()),
+      );
+    }
+
+    if (filteredStudents.length === 0) {
+      throw new NotFoundException('No students found matching the criteria');
+    }
+
+    return filteredStudents;
   }
 
   readByName(name: string): Student[] {

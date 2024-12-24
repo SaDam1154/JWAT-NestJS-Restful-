@@ -15,7 +15,6 @@ export class UtilsService {
     fs.writeFileSync(this.DATA_FILE, JSON.stringify(data, null, 2), 'utf8');
   };
 
-  // Check if existed any course with required Id
   checkClassExist = (coursesArr: any, courseId: number) => {
     const courseIdx = coursesArr.findIndex(
       (course: { id: number }) => course.id === Number(courseId),
