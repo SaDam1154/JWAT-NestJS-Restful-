@@ -7,5 +7,5 @@ export class CreateStudentDto {
 
   @IsNotEmpty()
   @IsString()
-  classId: string;
+  schoolClassId: string;
 }

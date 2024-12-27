@@ -10,11 +10,11 @@ import { Request } from 'express';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
-  private roles = ['admin', 'principal', 'teacher'];
+  private validRoles = ['admin', 'principal', 'teacher'];
 
   constructor(private readonly reflector: Reflector) {}
 
-  canActivate(context: ExecutionContext) {
+  canActivate(context: ExecutionContext): boolean {
     const roles = this.reflector.get<string[]>('roles', context.getHandler());
 
     const request = context.switchToHttp().getRequest<Request>();
@@ -26,14 +26,26 @@ export class RolesGuard implements CanActivate {
 
     const token = authHeader.split(' ')[1];
 
-    if (!this.roles.includes(token)) {
-      throw new ForbiddenException('You do not have access to this api');
+    const userRole = this.decodeToken(token);
+
+    if (!this.validRoles.includes(userRole)) {
+      throw new ForbiddenException('You do not have access to this API');
     }
 
-    if (roles && !roles.includes(token)) {
-      throw new ForbiddenException('You do not have access to this api');
+    if (roles && !roles.includes(userRole)) {
+      throw new ForbiddenException(
+        `Access denied: You need one of these roles: ${roles.join(', ')}`,
+      );
     }
 
     return true;
+  }
+
+  private decodeToken(token: string): string {
+    if (token === 'adminToken') return 'admin';
+    if (token === 'teacherToken') return 'teacher';
+    if (token === 'principalToken') return 'principal';
+
+    return 'guest';
   }
 }

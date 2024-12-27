@@ -22,8 +22,11 @@ export class StudentController {
   @Get()
   @Roles('admin', 'principal', 'teacher')
   @UseGuards(RolesGuard)
-  readAll(@Query('name') name?: string, @Query('classId') classId?: string) {
-    return this.studentsService.readAll(name, classId);
+  readAll(
+    @Query('name') name?: string,
+    @Query('schoolClassId') schoolClassId?: string,
+  ) {
+    return this.studentsService.readAll(name, schoolClassId);
   }
 
   @Get('name')
@@ -36,8 +39,8 @@ export class StudentController {
   @Get('class')
   @Roles('admin', 'principal', 'teacher')
   @UseGuards(RolesGuard)
-  readByClass(@Query('classId') classId: string) {
-    return this.studentsService.readByClass(classId);
+  readByClass(@Query('schoolClassId') schoolClassId: string) {
+    return this.studentsService.readByClass(schoolClassId);
   }
 
   @Get(':id')

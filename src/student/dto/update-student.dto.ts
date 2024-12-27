@@ -7,5 +7,5 @@ export class UpdateStudentDto {
 
   @IsOptional()
   @IsString()
-  classId?: string;
+  schoolClassId?: string;
 }

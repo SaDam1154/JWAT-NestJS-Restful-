@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 
-@Catch(HttpException)
+@Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
   private HttpResponseCode(status: number): string {
     const errorCodes = {
@@ -25,21 +25,32 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
 
-    const status = exception.getStatus();
+    const status =
+      exception instanceof HttpException
+        ? exception.getStatus()
+        : HttpStatus.INTERNAL_SERVER_ERROR;
+
     const errorCode = this.HttpResponseCode(status);
-    const errorDetail = exception.getResponse();
+    const errorDetail = exception.getResponse
+      ? exception.getResponse()
+      : { message: exception.message };
 
     const devMessage =
       typeof errorDetail === 'string'
         ? errorDetail
         : (errorDetail as any).message || 'Unexpected error occurred';
 
+    const stackTrace =
+      process.env.NODE_ENV !== 'production' ? exception.stack : undefined;
+
     response.status(status).json({
+      timestamp: new Date().toISOString(),
       path: request.url,
       errorCode: errorCode,
       devMessage: devMessage,
       status: status,
       data: request.body,
+      ...(stackTrace && { stack: stackTrace }), // Chỉ trả stack trace trong môi trường dev
     });
   }
 }

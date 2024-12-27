@@ -1,84 +1,107 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { Student } from './student.entity';
+import { CreateStudentDto } from './dto/create-student.dto';
+import { SchoolClass } from 'src/school-class/schoolClass.entity';
 
 @Injectable()
 export class StudentService {
-  private students: Student[] = [
-    { id: 0, name: 'Student1', classId: 'JWAT1' },
-    { id: 1, name: 'Student2', classId: 'JWAT2' },
-    { id: 2, name: 'Student3', classId: 'JWAT3' },
-  ];
+  constructor(
+    @InjectRepository(Student)
+    private readonly studentRepository: Repository<Student>,
+    @InjectRepository(SchoolClass)
+    private readonly schoolClassRepository: Repository<SchoolClass>,
+  ) {}
 
-  readAll(name?: string, classId?: string): Student[] {
-    if (!name && !classId) {
-      return this.students;
-    }
+  async readAll(name?: string, schoolClassId?: string): Promise<Student[]> {
+    const query = this.studentRepository.createQueryBuilder('student');
 
-    let filteredStudents = this.students;
     if (name) {
-      filteredStudents = filteredStudents.filter((s) =>
-        s.name.toLowerCase().includes(name.toLowerCase()),
-      );
+      query.andWhere('LOWER(student.name) LIKE :name', {
+        name: `%${name.toLowerCase()}%`,
+      });
     }
 
-    if (classId) {
-      filteredStudents = filteredStudents.filter((s) =>
-        s.classId.toLowerCase().includes(classId.toLowerCase()),
-      );
+    if (schoolClassId) {
+      query.andWhere('(student.schoolClassId) = :schoolClassId', {
+        schoolClassId: schoolClassId,
+      });
     }
 
-    if (filteredStudents.length === 0) {
+    const students = await query.getMany();
+    if (!students || students.length == 0) {
       throw new NotFoundException('No students found matching the criteria');
     }
 
-    return filteredStudents;
+    return students;
   }
 
-  readByName(name: string): Student[] {
-    const studentsByName = this.students.filter((s) =>
-      s.name.toLowerCase().includes(name.toLowerCase()),
-    );
-    if (studentsByName.length === 0)
+  async readByName(name: string): Promise<Student[]> {
+    const studentsByName = await this.studentRepository.find({
+      where: { name: name },
+    });
+
+    if (!studentsByName || studentsByName.length === 0) {
       throw new NotFoundException('No students found with this name');
+    }
+
     return studentsByName;
   }
 
-  readByClass(classId: string): Student[] {
-    const studentsByClass = this.students.filter((s) =>
-      s.classId.toLowerCase().includes(classId.toLowerCase()),
-    );
-    if (studentsByClass.length === 0)
+  async readByClass(schoolClassId: string): Promise<Student[]> {
+    const studentsByClass = await this.studentRepository.find({
+      where: { schoolClassId: schoolClassId },
+    });
+
+    if (!studentsByClass || studentsByClass.length === 0) {
       throw new NotFoundException('No students found in this class');
+    }
+
     return studentsByClass;
   }
 
-  readById(id: number): Student {
-    const student = this.students.find((s) => s.id == id);
-    if (!student)
-      throw new NotFoundException('Student not found when searchID');
+  async readById(id: number): Promise<Student> {
+    const student = await this.studentRepository.findOne({ where: { id } });
+
+    if (!student) {
+      throw new NotFoundException('Student not found');
+    }
+
     return student;
   }
 
-  create(student: Omit<Student, 'id'>): Student {
-    const newId =
-      this.students.length > 0
-        ? this.students[this.students.length - 1].id + 1
-        : 1;
+  async create(data: CreateStudentDto): Promise<Student> {
+    const existStudent = await this.studentRepository.findOne({
+      where: { name: data.name },
+    });
 
-    const newStudent = { id: newId, ...student };
-    this.students.push(newStudent);
-    return newStudent;
+    const existSchoolClass = await this.schoolClassRepository.findOne({
+      where: { id: data.schoolClassId },
+    });
+
+    if (!existStudent && existSchoolClass) {
+      const newStudent = this.studentRepository.create(data);
+      return await this.studentRepository.save(newStudent);
+    }
+    if (existStudent) console.log('cung ten');
+    if (!existSchoolClass) console.log('ko co lop');
   }
 
-  update(id: number, updatedStudent: Partial<Student>): Student {
-    const student = this.readById(id);
+  async update(id: number, updatedStudent: Partial<Student>): Promise<Student> {
+    const student = await this.readById(id);
     Object.assign(student, updatedStudent);
-    return student;
+    return await this.studentRepository.save(student);
   }
 
-  delete(id: number): void {
-    const index = this.students.findIndex((s) => s.id == id);
-    if (index === -1) throw new NotFoundException('Student not found');
-    this.students.splice(index, 1);
+  async delete(id: number): Promise<void> {
+    const result = await this.studentRepository.delete(id);
+    if (result.affected === 0) {
+      throw new NotFoundException('Student not found');
+    }
   }
 }
