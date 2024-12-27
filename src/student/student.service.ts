@@ -28,13 +28,13 @@ export class StudentService {
     }
 
     if (schoolClassId) {
-      query.andWhere('(student.schoolClassId) = :schoolClassId', {
-        schoolClassId: schoolClassId,
+      query.andWhere('student.schoolClassId LIKE :schoolClassId', {
+        schoolClassId: `%${schoolClassId}%`,
       });
     }
 
     const students = await query.getMany();
-    if (!students || students.length == 0) {
+    if (!students || students.length === 0) {
       throw new NotFoundException('No students found matching the criteria');
     }
 
@@ -88,8 +88,9 @@ export class StudentService {
       const newStudent = this.studentRepository.create(data);
       return await this.studentRepository.save(newStudent);
     }
-    if (existStudent) console.log('cung ten');
-    if (!existSchoolClass) console.log('ko co lop');
+
+    if (existStudent) console.log('Student with this name already exists');
+    if (!existSchoolClass) console.log('School class not found');
   }
 
   async update(id: number, updatedStudent: Partial<Student>): Promise<Student> {
