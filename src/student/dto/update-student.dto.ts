@@ -1,11 +1,11 @@
-import { IsOptional, IsString } from 'class-validator';
+import { InputType, Field, PartialType } from '@nestjs/graphql';
+import { CreateStudentDto } from './create-student.dto';
 
-export class UpdateStudentDto {
-  @IsOptional()
-  @IsString()
+@InputType()
+export class UpdateStudentDto extends PartialType(CreateStudentDto) {
+  @Field({ nullable: true })
   name?: string;
 
-  @IsOptional()
-  @IsString()
+  @Field({ nullable: true })
   schoolClassId?: string;
 }

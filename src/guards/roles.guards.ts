@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
+import { GqlExecutionContext } from '@nestjs/graphql';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -16,10 +17,16 @@ export class RolesGuard implements CanActivate {
 
   canActivate(context: ExecutionContext): boolean {
     const roles = this.reflector.get<string[]>('roles', context.getHandler());
+    let request: Request;
 
-    const request = context.switchToHttp().getRequest<Request>();
+    if (context.getType() === 'http') {
+      request = context.switchToHttp().getRequest<Request>();
+    } else {
+      const gqlContext = GqlExecutionContext.create(context);
+      request = gqlContext.getContext().req; // Truyền context request trong GraphQL
+    }
+
     const authHeader = request.headers['authorization'];
-
     if (!authHeader) {
       throw new UnauthorizedException('Missing Authorization header');
     }

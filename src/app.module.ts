@@ -3,18 +3,17 @@ import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { StudentModule } from './student/student.module';
-import { ClassModule } from './school-class/schoolClass.module';
+import { SchoolClassModule } from './school-class/schoolClass.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { SchoolClass } from './school-class/schoolClass.entity';
-import { Student } from './student/student.entity';
 import { dataSourceOptions } from 'db/data-source';
-
+import { GraphqlModule } from './graphql.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     StudentModule,
-    ClassModule,
+    SchoolClassModule,
     TypeOrmModule.forRoot(dataSourceOptions),
+    GraphqlModule,
   ],
   controllers: [AppController],
   providers: [AppService],

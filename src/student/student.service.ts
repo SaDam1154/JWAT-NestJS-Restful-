@@ -1,8 +1,4 @@
-import {
-  ConflictException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Student } from './student.entity';
@@ -23,12 +19,12 @@ export class StudentService {
 
     if (name) {
       query.andWhere('LOWER(student.name) LIKE :name', {
-        name: `%${name.toLowerCase()}%`,
+        name: `%${name?.toLowerCase()}%`,
       });
     }
 
     if (schoolClassId) {
-      query.andWhere('student.schoolClassId LIKE :schoolClassId', {
+      query.andWhere('LOWER(student.schoolClassId) LIKE :schoolClassId', {
         schoolClassId: `%${schoolClassId}%`,
       });
     }
@@ -84,13 +80,19 @@ export class StudentService {
       where: { id: data.schoolClassId },
     });
 
+    if (existStudent) {
+      console.log('Student with this name already exists');
+      throw new NotFoundException('Student already exists');
+    }
+    if (!existSchoolClass) {
+      console.log('School class not found');
+      throw new NotFoundException('School class not found');
+    }
+
     if (!existStudent && existSchoolClass) {
       const newStudent = this.studentRepository.create(data);
       return await this.studentRepository.save(newStudent);
     }
-
-    if (existStudent) console.log('Student with this name already exists');
-    if (!existSchoolClass) console.log('School class not found');
   }
 
   async update(id: number, updatedStudent: Partial<Student>): Promise<Student> {

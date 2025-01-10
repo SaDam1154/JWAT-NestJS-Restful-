@@ -1,0 +1,52 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+input CreateSchoolClassDto {
+  id: String!
+  schoolClassName: String!
+}
+
+input CreateStudentDto {
+  name: String!
+  schoolClassId: String!
+}
+
+type Mutation {
+  createSchoolClass(input: CreateSchoolClassDto!): SchoolClass!
+  createStudent(createStudentDto: CreateStudentDto!): Student!
+  deleteSchoolClass(id: String!): Boolean!
+  deleteStudent(id: Float!): String!
+  updateSchoolClass(id: String!, input: UpdateSchoolClassDto!): SchoolClass!
+  updateStudent(id: Float!, updateStudentDto: UpdateStudentDto!): Student!
+}
+
+type Query {
+  getAllSchoolClasses: [SchoolClass!]!
+  getSchoolClassById(id: String!): SchoolClass!
+  getStudentById(id: Float!): Student!
+  getStudents(name: String, schoolClassId: String): [Student!]!
+}
+
+type SchoolClass {
+  id: String!
+  schoolClassName: String!
+  students: [Student!]
+}
+
+type Student {
+  id: Float!
+  name: String!
+  schoolClass: SchoolClass
+  schoolClassId: String!
+}
+
+input UpdateSchoolClassDto {
+  id: String
+  schoolClassName: String
+}
+
+input UpdateStudentDto {
+  name: String
+  schoolClassId: String
+}

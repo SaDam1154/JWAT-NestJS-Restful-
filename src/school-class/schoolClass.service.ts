@@ -76,17 +76,15 @@ export class SchoolClassService {
   }
 
   async delete(id: string): Promise<void> {
-    const schoolClass = await this.readById(id);
-
     const studentCount = await this.schoolClassRepository
       .createQueryBuilder('schoolClass')
-      .leftJoinAndSelect('schoolClass.students', 'student')
-      .where('student.id = :id', { id })
+      .leftJoin('schoolClass.students', 'student')
+      .where('schoolClass.id = :id', { id })
+      .andWhere('student.schoolClassId = :id', { id })
       .getCount();
-    console.log(studentCount);
-    if (studentCount > 0) {
+
+    if (studentCount > 0)
       throw new BadRequestException('Cannot delete school class with students');
-    }
 
     await this.schoolClassRepository.delete(id);
   }

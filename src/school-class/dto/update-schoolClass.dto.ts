@@ -1,4 +1,5 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateSchoolClassDto } from './create-schoolclass.dto';
+import { InputType, PartialType } from '@nestjs/graphql';
+import { CreateSchoolClassDto } from './create-schoolClass.dto';
 
+@InputType()
 export class UpdateSchoolClassDto extends PartialType(CreateSchoolClassDto) {}
